@@ -164,9 +164,9 @@ export const tmdbApi = process.env.TMDB_KEY && process.env.TMDB_KEY;
       }
     };
     const data = await new Promise((resolve, reject) => {
-      const req = https.request(options, (res) => {
-        let data = '';
-        res.on('data', chunk => data += chunk);
+      const req = https.request(options, (res: any) => {
+  let data = '';
+  res.on('data', (chunk: any) => data += chunk);
         res.on('end', () => resolve(JSON.parse(data)));
       });
       req.on('error', reject);
