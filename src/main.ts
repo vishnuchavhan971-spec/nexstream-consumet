@@ -93,7 +93,7 @@ export const tmdbApi = process.env.TMDB_KEY && process.env.TMDB_KEY;
       // redirect to the demo request page
       reply.redirect('/');
     });
-
+    
     fastify.get('/apidemo', async (_, reply) => {
       try {
         const stream = fs.readFileSync(__dirname + '/../demo/apidemo.html');
@@ -149,6 +149,35 @@ export const tmdbApi = process.env.TMDB_KEY && process.env.TMDB_KEY;
   await fastify.register(Utils, { prefix: '/utils' });
 
   try {
+    fastify.post('/anilist', async (request, reply) => {
+  try {
+    const https = require('https');
+    const body = JSON.stringify(request.body);
+    const options = {
+      hostname: 'graphql.anilist.co',
+      path: '/',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    };
+    const data = await new Promise((resolve, reject) => {
+      const req = https.request(options, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => resolve(JSON.parse(data)));
+      });
+      req.on('error', reject);
+      req.write(body);
+      req.end();
+    });
+    reply.send(data);
+  } catch (err) {
+    reply.status(500).send({ error: 'AniList proxy failed' });
+  }
+});
     fastify.get('/', (_, rp) => {
       rp.status(200).send(
         `Welcome to consumet api! 🎉 \n${
