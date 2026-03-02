@@ -178,6 +178,35 @@ export const tmdbApi = process.env.TMDB_KEY && process.env.TMDB_KEY;
     reply.status(500).send({ error: 'AniList proxy failed' });
   }
 });
+    fastify.post('/anilist', async (request: any, reply: any) => {
+  try {
+    const https = require('https');
+    const body = JSON.stringify(request.body);
+    const data = await new Promise<any>((resolve, reject) => {
+      const options = {
+        hostname: 'graphql.anilist.co',
+        path: '/',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Content-Length': Buffer.byteLength(body)
+        }
+      };
+      const req = https.request(options, (res: any) => {
+        let d = '';
+        res.on('data', (chunk: any) => d += chunk);
+        res.on('end', () => resolve(JSON.parse(d)));
+      });
+      req.on('error', reject);
+      req.write(body);
+      req.end();
+    });
+    reply.send(data);
+  } catch (err) {
+    reply.status(500).send({ error: 'AniList proxy failed' });
+  }
+});
     fastify.get('/', (_, rp) => {
       rp.status(200).send(
         `Welcome to consumet api! 🎉 \n${
